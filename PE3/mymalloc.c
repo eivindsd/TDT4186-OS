@@ -47,6 +47,41 @@ void *mymalloc(long numbytes) {
   }
 
   /* add your code here! */
+  struct mem_control_block *current, *previous;
+  current = free_list_start;
+  void *result;
+
+  while(current && (current->size) < numbytes) { //must add statement to check if we are at the end of the freelist
+      previous = current;
+      current = current->next;
+      printf("One block checked\n")
+  }
+
+  if(current->size == numbytes) { //allocate exact fitting memory block
+      result = (void*)(++current);
+      previous->next = current->next;
+      printf("We found an exact fitting block, and allocated this!");
+      return result;
+  }
+
+  else if(current->size > (numbytes + sizeof(struct mem_control_block))) { //split the block into two pieces
+      if((numbytes % 8) != 0) {
+          numbytes = numbytes + 8 - (numbytes % 8)
+      }
+      struct mem_control_block *new = (void*)((void*)current+numbytes+sizeof(struct mem_control_block));
+      new->size = current->size-numbytes-sizeof(struct mem_control_block);
+      new->next = current->next;
+      previous->next = new;
+      result = (void*)(++current);
+      printf("We found a splitting block, splitted this and allocated memory");
+      return result;
+  }
+
+  else {
+      result = (void*)0;
+      printf("No memory to allocate");
+      return result;
+  }
 
 }
 
