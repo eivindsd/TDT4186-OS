@@ -67,7 +67,7 @@ void *mymalloc(long numbytes) {
       previous = current;
       current = current->next;
       //If the current is NULL, we have reached the end of the free list. 
-      if (current == NULL) {
+      if (current == (void*)0 {
         printf("We reached the end of the free list\n");
         return (void*)0;
       }
@@ -75,7 +75,12 @@ void *mymalloc(long numbytes) {
   }
   //if the block we want to allocate fits exact in the free-memory-area
   if (current->size == block) {
-    previous->next = current->next;
+    if(current == free_list_start) {
+        free_list_start = (void*)0;
+    }
+    if(previous != (void*)0) {
+        previous->next = current->next;
+    }
     printf("We found an exact fitting block, and allocated this\n");
     result = (void*)(++current);  // result is the first memory allocation after the mem_control_block
     return result;
@@ -199,6 +204,6 @@ int main(int argc, char **argv) {
   mymalloc_init();
 
   //try to allocate an exact fitting block
-  //mymalloc(64*1024-32);
+  mymalloc(64*1024-32);
   //mymalloc_init();
 }
