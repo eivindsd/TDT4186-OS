@@ -67,7 +67,7 @@ void *mymalloc(long numbytes) {
       previous = current;
       current = current->next;
       //If the current is NULL, we have reached the end of the free list. 
-      if (current == (void*)0 {
+      if (current == (void*)0) {
         printf("We reached the end of the free list\n");
         return (void*)0;
       }
@@ -81,7 +81,7 @@ void *mymalloc(long numbytes) {
     if(previous != (void*)0) {
         previous->next = current->next;
     }
-    printf("We found an exact fitting block, and allocated this\n");
+    printf("We found an exact fitting block, and allocated this at address %p\n", current);
     result = (void*)(++current);  // result is the first memory allocation after the mem_control_block
     return result;
   }
@@ -190,20 +190,74 @@ void myfree(void *firstbyte) {
 
 int main(int argc, char **argv) {
 
-  //try to allocate more bytes than available
+
+  printf("Test 1: Try to allocate more bytes than available\n\n");
   mymalloc(64*1024);
-  mymalloc_init();
+  printf("\n");
 
-  //test myfree function - allocate memory, 
-  //then free one block, and allocate at the same adress again
-  mymalloc(8);
-  mymalloc(8);
-  void*(v) = mymalloc(8);
-  myfree(v);
-  mymalloc(8);
+  printf("Test 2: Try to add multiple blocks of data\n\n");
   mymalloc_init();
+  mymalloc(8);
+  mymalloc(128);
+  mymalloc(1024);
+  printf("\n");
 
-  //try to allocate an exact fitting block
+  printf("Test 3: Add multiple blocks of data, then add a block which is too large\n\n");
+  mymalloc_init();
+  mymalloc(1024);
+  mymalloc(128);
+  mymalloc(1024);
+  mymalloc(64*1024);
+  printf("\n");
+ 
+  printf("Test 4: Add multiple blocks of data that fits perfectly\n\n");
+  mymalloc_init();
   mymalloc(64*1024-32);
-  //mymalloc_init();
+  printf("\n");
+
+
+  printf("Test 5: Remove a block to adjecent the left of the free list\n\n");
+  mymalloc_init();
+  mymalloc(1024);
+  mymalloc(128);
+  void*(v) = mymalloc(1024);
+  myfree(v);
+  printf("\n");
+
+  printf("Test 6: Remove a block adjecent to the right of the free list\n\n");
+  mymalloc_init();
+  void*(a) = mymalloc(1024);
+  void*(b) = mymalloc(128);
+  void*(c) = mymalloc(1024);
+  myfree(b);
+  myfree(c);
+  mymalloc(8);
+  printf("\n");
+
+  printf("Test 7: Remove a block adjecent to the free list at both left and right\n\n");
+  mymalloc_init();
+  mymalloc(64);
+  void*(d) = mymalloc(1024);
+  void*(e) = mymalloc(128);
+  void*(f) = mymalloc(1024);
+  myfree(d);
+  myfree(f);
+  myfree(e);
+  mymalloc(8);
+  printf("\n");
+
+  printf("Test 8: Remove a block which is non-adjecent to the free list\n\n");
+  mymalloc_init();
+  mymalloc(64);
+  void*(h) = mymalloc(1024);
+  mymalloc(128);
+  void*(i) = mymalloc(128);
+  mymalloc(128);
+  void*(j) = mymalloc(1024);
+  myfree(j);
+  myfree(h);
+  myfree(i);
+  mymalloc(1024);
+  printf("\n");
+ 
 }
