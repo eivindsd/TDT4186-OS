@@ -49,6 +49,9 @@ void *mymalloc(long numbytes) {
   }
   struct mem_control_block *current, *previous;
   void *result;
+
+  //the block we want to allocate
+  long block = numbytes + sizeof(struct mem_control_block);
   
   //We round the number of bytes to a multiple of 8 as specified in the
   // assignment specification. 
@@ -63,26 +66,24 @@ void *mymalloc(long numbytes) {
       current = current->next;
       //If the current is NULL, we have reached the end of the free list. 
       if (current == NULL) {
-        printf("We reached the end of the free list");
-        return NULL;
+        printf("We reached the end of the free list\n");
+        return (void*)0;
       }
-      printf("One iteration of checking blocks");
+      printf("One iteration of checking blocks\n");
   }
 
-  if (current->size == numbytes + sizeof(struct mem_control_block)) {
+  if (current->size == block) {
     previous->next = current->next;
-
+    printf("We found an exact fitting block, and allocated this\n");
     result = (void*)(++current);  // result is the first memory allocation after the mem_control_block
-    printf("We found an exact fitting block, and allocated this");
     return result;
   }
 
-  else if ((current->size) > (numbytes + sizeof(struct mem_control_block))) {
-      struct mem_control_block *new = (void*)((void*) current + numbytes + sizeof(struct mem_control_block));
-      new->size = current->size - numbytes - sizeof(struct mem_control_block);
+  else if(current->size > block) {
+      struct mem_control_block *new = (void*)current + block;
+      new->size = current->size - block;
       new->next = current->next;
       previous->next = new;
-      
       result = (void*)(++current);
       printf("We found a fitting block, splitted this, and allocated memory\n");
       return result;
@@ -162,14 +163,17 @@ void myfree(void *firstbyte) {
   }
   //If something funny has happened
   else {
-      perror("Error message: ");
-      exit(EXIT_FAILURE);
+      return (void)0;
   }
 }
 
 int main(int argc, char **argv) {
 
-  /* add your test cases here! */
-  mymalloc(2);
+  //try to allocate more bytes than available
+  //mymalloc(64*1024*2000);
+  //try to allocate an exact fitting block
+  //mymalloc(64*1024-32);
+  //try to allocate a memory area which is smaller than the current free-list-area
+  mymalloc(64);
 
 }
