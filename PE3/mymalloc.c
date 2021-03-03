@@ -47,21 +47,23 @@ void *mymalloc(long numbytes) {
   if (has_initialized == 0) {
      mymalloc_init();
   }
-  struct mem_control_block *current, *previous;
+
+  struct mem_control_block *current = free_list_start;
+  struct mem_control_block *previous = (void*)0;
   void *result;
 
-  //the block we want to allocate
-  long block = numbytes + sizeof(struct mem_control_block);
-  
   //We round the number of bytes to a multiple of 8 as specified in the
   // assignment specification. 
   if (numbytes % 8 != 0) {
       numbytes = numbytes + (8 - numbytes % 8);
   }
 
-  current = free_list_start;
+  //size of the block we want to allocate
+  long block = numbytes + sizeof(struct mem_control_block);
+
  
-  while (current && (current->size < numbytes)) {
+  //this loop runs while the current free-block is smaller than the block we want to allocate
+  while (current && (current->size < block)) {
       previous = current;
       current = current->next;
       //If the current is NULL, we have reached the end of the free list. 
@@ -71,7 +73,7 @@ void *mymalloc(long numbytes) {
       }
       printf("One iteration of checking blocks\n");
   }
-
+  //if the block we want to allocate fits exact in the free-memory-area
   if (current->size == block) {
     previous->next = current->next;
     printf("We found an exact fitting block, and allocated this\n");
@@ -80,12 +82,20 @@ void *mymalloc(long numbytes) {
   }
 
   else if(current->size > block) {
-      struct mem_control_block *new = (void*)current + block;
+      //create new free-space after the allocated block
+      struct mem_control_block *new = (void*)((void*)current + block);
       new->size = current->size - block;
       new->next = current->next;
-      previous->next = new;
+      //if we allocate memory at the start at our memory-segment, we have to update
+      //the free-list start
+      if(previous == (void*)0) {
+        free_list_start = new;
+      }
+      else {
+        previous->next = new;
+      }
       result = (void*)(++current);
-      printf("We found a fitting block, splitted this, and allocated memory\n");
+      printf("We found a fitting block, splitted this, and allocated memory at address %p\n", current);
       return result;
   }
 
@@ -102,7 +112,7 @@ void myfree(void *firstbyte) {
   //This would be the case if all the memory addresses is allocated
   if (free_list_start == NULL) {
     free_list_start = current;
-    current->next = NULL;
+    current->next = (struct mem_control_block*)0;
   }
 
   //If the block we want to free is located before the start of the free-list in memory
@@ -115,19 +125,21 @@ void myfree(void *firstbyte) {
     if (current + current->size == dupe) {
       current->size += dupe->size;
       current->next = dupe->next;
+      printf("Freed memoryblock with address %p\n", firstbyte);
     }
     //We have two non-adjacent blocks, so we just need to set the currents next to 
     //our next, which is our duplicated mem_control_block
     else {
       current->next = dupe;
-    }
+      printf("Freed memoryblock with address %p\n", firstbyte);
   }
+}
   //if the block we want to free is located after the start of the free-list in memory
   else if (free_list_start < current) {
     struct mem_control_block *left, *right;
     left = free_list_start;
     right = left->next;
-    
+  
     //We want to find two free memory control blocks surrounding our current memory control block
     //This while loop will iterate so that we make this happen
     while (right != NULL && right < current) {
@@ -142,23 +154,27 @@ void myfree(void *firstbyte) {
       left->next = current;
       current->next = right->next;
       current->size += right->size;
+      printf("Freed memoryblock with address %p\n", firstbyte);
     }
     //Second scenario. Our current memory control block is adjacent to the left
     // and we merge our current with the right block
     else if (left + left->size == current) {
       left->size += current->size;
+      printf("Freed memoryblock with address %p\n", firstbyte);
     }
-    //Third scenario. Our current memory control block is not adjacent to any free blocks, 
-    //but placed in between. 
+    //Third scenario. The memory control block is adjacent to both the left and the right.
     else if ((left + left->size == current) && (current + current->size == right)) {
         left->next = right->next;
         left->size += current->size + right->size;
         current = left;
+        printf("Freed memoryblock with address %p\n", firstbyte);
     }
-    //Final scenario. The memory control block is adjacent to both the left and the right.
+    //Final scenario. Our current memory control block is not adjacent to any free blocks, 
+    //but placed in between. 
     else {
       left->next = current;
       current->next = right;
+      printf("Freed memoryblock with address %p\n", firstbyte);
     }
   }
   //If something funny has happened
@@ -170,10 +186,19 @@ void myfree(void *firstbyte) {
 int main(int argc, char **argv) {
 
   //try to allocate more bytes than available
-  //mymalloc(64*1024*2000);
+  mymalloc(64*1024);
+  mymalloc_init();
+
+  //test myfree function - allocate memory, 
+  //then free one block, and allocate at the same adress again
+  mymalloc(8);
+  mymalloc(8);
+  void*(v) = mymalloc(8);
+  myfree(v);
+  mymalloc(8);
+  mymalloc_init();
+
   //try to allocate an exact fitting block
   //mymalloc(64*1024-32);
-  //try to allocate a memory area which is smaller than the current free-list-area
-  mymalloc(64);
-
+  //mymalloc_init();
 }
