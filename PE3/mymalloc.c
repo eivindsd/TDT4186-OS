@@ -48,6 +48,8 @@ void *mymalloc(long numbytes) {
      mymalloc_init();
   }
 
+  //Init pointers to memory-control-blocks for the current block and 
+  //the previous block. Initially the previous will be non-existent. 
   struct mem_control_block *current = free_list_start;
   struct mem_control_block *previous = (void*)0;
   void *result;
@@ -58,12 +60,13 @@ void *mymalloc(long numbytes) {
       numbytes = numbytes + (8 - numbytes % 8);
   }
 
-  //size of the block we want to allocate
+  //size of the block we want to allocate (numbytes + metadata)
   long block = numbytes + sizeof(struct mem_control_block);
 
- 
-  //this loop runs while the current free-block is smaller than the block we want to allocate
+  //this loop runs while the current free-block is smaller than the block we want to allocate.
+  //When a fitting free-block is found or we run out of memoryaddresses, the loop ends
   while (current && (current->size < block)) {
+      //test next block
       previous = current;
       current = current->next;
       //If the current is NULL, we have reached the end of the free list. 
@@ -73,22 +76,27 @@ void *mymalloc(long numbytes) {
       }
       printf("One iteration of checking blocks\n");
   }
-  //if the block we want to allocate fits exact in the free-memory-area
+  //if the block we want to allocate fits exact in the free-memory-area (no need for splitting)
   if (current->size == block) {
+    //if the allocated block will use all the free-memory
     if(current == free_list_start) {
         free_list_start = (void*)0;
     }
+    //if we don't allocate at the start of the free-list
+    //we need to update the free-list (linked-list)
     if(previous != (void*)0) {
         previous->next = current->next;
     }
     printf("We found an exact fitting block, and allocated this at address %p\n", current);
-    result = (void*)(++current);  // result is the first memory allocation after the mem_control_block
+    // result is the first memory allocation after the mem_control_block
+    result = (void*)(++current);  
     return result;
   }
 
   else if(current->size > block) {
-      //create new free-space after the allocated block
+      //create new free-space after the allocated block (split)
       struct mem_control_block *new = (void*)((void*)current + block);
+      //new is the memory-control-block for the remaining free-list-block
       new->size = current->size - block;
       new->next = current->next;
       //if we allocate memory at the start at our memory-segment, we have to update
@@ -96,6 +104,7 @@ void *mymalloc(long numbytes) {
       if(previous == (void*)0) {
         free_list_start = new;
       }
+      //when we have a previous we have to update the links in the free-list
       else {
         previous->next = new;
       }
@@ -103,7 +112,7 @@ void *mymalloc(long numbytes) {
       printf("We found a fitting block, splitted this, and allocated memory at address %p\n", current);
       return result;
   }
-
+  //some funny business going on
   else {
       return (void*)0;
   }
@@ -111,8 +120,9 @@ void *mymalloc(long numbytes) {
 
 void myfree(void *firstbyte) {
 
-  struct mem_control_block *current, *previous;
-  current = firstbyte - sizeof(struct mem_control_block);
+  struct mem_control_block *previous;
+  //to access the memory-control-block of the block we want to free
+  struct mem_control_block *current = firstbyte - sizeof(struct mem_control_block);
 
   //This would be the case if all the memory addresses is allocated
   if (free_list_start == NULL) {
