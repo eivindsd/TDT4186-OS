@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 
 char** tokenize() {
@@ -39,13 +40,26 @@ char** tokenize() {
 }
 
 void execute() {
-    
-}
 
+}
 
 int main() {
     while(69){
         char** tokens = tokenize();
-        }
+        int forkstatus = fork();
+        pid_t wpid;
+        int status;
+      
+        if (forkstatus == 0 ) {
+            if (execv(tokens[0], tokens) == -1) {
+                perror("Det ble kuk"); 
+            }
+            exit(EXIT_FAILURE); 
+        } 
+        else {
+            printf("Parent process\n");
+            while (wpid == wait(&status) > 0);
+        }      
+}
 }
 
