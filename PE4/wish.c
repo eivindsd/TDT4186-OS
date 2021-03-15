@@ -42,8 +42,8 @@ while(69) {
     }
     printf("\n");
     printf("Redirections: ");
-    for (i; i<m; i++) {
-        printf(" %s", tokens[i]);
+    for (int c = i; c<m; c++) {
+        printf(" %s", tokens[c]);
     }
      printf("\n");
     }}
