@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 
-void tokenize() {
+char** tokenize() {
     char terminal_line[30];
-    char * tokens[20];
+    static char * tokens[20];
     int m = 0;
     printf("wish£ ");
     fgets(terminal_line, sizeof(terminal_line), stdin);
@@ -23,7 +24,6 @@ void tokenize() {
             printf(" %s", tokens[n]);
             n++;
             i = n;
-            printf("%d", i);
             if (n >= m) {
                 break;
             }
@@ -35,13 +35,17 @@ void tokenize() {
     }
      printf("\n");
     }
+    return tokens;
+}
+
+void execute() {
     
 }
 
 
 int main() {
     while(69){
-        tokenize();
+        char** tokens = tokenize();
         }
 }
 
