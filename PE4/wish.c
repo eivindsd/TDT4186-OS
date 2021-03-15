@@ -14,7 +14,7 @@
 
 
 int main() {
-while(1) {
+while(69) {
     char terminal_line[30];
     char * tokens[20];
     int m = 0;
@@ -24,25 +24,31 @@ while(1) {
     while(token != NULL){
         tokens[m] = token;
         token = strtok(NULL, " ");
-        printf("%lu", sizeof(tokens));
         m++;
     }
-    printf("%lu", sizeof(tokens));
     printf("Command name: %s\n", tokens[0]);
-    printf("Command parameters");
+    if (m > 1) {
+    printf("Command parameters: ");
     int n = 1;
-    int i;
+    int i = 1;
     while ((strcmp(tokens[n], "<")!=0) && (strcmp(tokens[n], ">")!=0)) {
         printf(" %s", tokens[n]);
         n++;
         i = n;
+        printf("%d", i);
+        if (n >= m) {
+            break;
+        }
     }
     printf("\n");
     printf("Redirections: ");
-    for (int i; n<sizeof(tokens);n++) {
-        printf(" %s", tokens[n]);
+    for (int c = i; c<m; c++) {
+        printf(" %s", tokens[c]);
     }
-    }
+     printf("\n");
+    }}
+   
+    
 
 }
 
