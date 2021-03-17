@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 
 // char** tokenize() {
@@ -49,6 +51,9 @@ int main() {
         //char** tokens = tokenize();
         char terminal_line[30];
         static char * tokens[20];
+        char* input;
+        char* output;
+        int crocodile=1;
         int m = 0;
         printf("wish£ ");
         fgets(terminal_line, sizeof(terminal_line), stdin);
@@ -68,14 +73,21 @@ int main() {
                 printf(" %s", tokens[n]);
                 n++;
                 i = n;
+                crocodile = n;
                 if (n >= m) {
                     break;
                 }
-            }
+            }  
         printf("\n");
         printf("Redirections: ");
         for (int c = i; c<m; c++) {
             printf(" %s", tokens[c]);
+            if(strcmp(tokens[c], ">")==0) {
+                output = tokens[c+1];
+            }
+            if(strcmp(tokens[c], "<")==0) {
+                input = tokens[c+1];
+            }
         }
         printf("\n");
         }
@@ -85,6 +97,17 @@ int main() {
         int status;
       
         if (pid == 0 ) {
+            if(output) {
+                int fd_out = creat(output, 0644);
+                dup2(fd_out, STDOUT_FILENO);
+                tokens[crocodile] = NULL;
+            }
+            if(input) {
+                int fd_in = open(input, O_RDONLY);
+                dup2(fd_in, STDIN_FILENO);
+                tokens[crocodile] = NULL;
+            }
+            
             if (execvp(tokens[0], tokens) == -1) {
                 perror("Error"); 
             } 
