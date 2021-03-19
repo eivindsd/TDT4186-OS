@@ -46,7 +46,11 @@
 // }
 
 
-int main() {
+int main(int argc, char **argv) {
+    FILE* f;
+    if(argc > 1) {
+            f = fopen(argv[1], "r");
+        }
     while(69){
         //char** tokens = tokenize();
         char terminal_line[100];
@@ -55,15 +59,27 @@ int main() {
         char* output;
         int crocodile=1;
         int m = 0;
-        printf("wish£ ");
-        fgets(terminal_line, sizeof(terminal_line), stdin);
-        terminal_line[strlen(terminal_line)-1] = '\0';
+        
+        if(argc > 1) {
+            fgets(terminal_line, sizeof(terminal_line), f);
+            printf("%s\n", terminal_line);
+        }
+        else {
+            printf("wish£ ");
+            fgets(terminal_line, sizeof(terminal_line), stdin);
+            printf("%s\n", terminal_line);
+            terminal_line[strlen(terminal_line)-1] = '\0';
+        }
         char* token = strtok(terminal_line, " ");
         while(token != NULL){
             tokens[m] = token;
             token = strtok(NULL, " ");
             m++;
         }
+        printf("%s ", tokens[0]);
+        printf("%s ", tokens[1]);
+        printf("%s", tokens[2]);
+        printf("%s", tokens[3]);
         printf("Command name: %s\n", tokens[0]);
         if (m > 1) {
             printf("Command parameters: ");
@@ -94,12 +110,22 @@ int main() {
         tokens[m] = NULL;
 
         if(strcmp(tokens[0], "cd")==0) {
-            chdir(tokens[1]);
+            if(chdir(tokens[1]) == -1) {
+                perror("Error");
+            }
             continue;
         }
         else if(strcmp(tokens[0], "exit")==0) {
             exit(0);
         }
+        // else if(strcmp(tokens[0], "./shellscript.sh")==0) {
+        //     //making the textfile executable 
+        //     chmod(tokens[0], 0755);
+        //     //execute the sh-file
+        //     if (execvp(tokens[0], tokens) == -1) {
+        //         perror("Error"); 
+        //     } 
+        // }
 
         int pid = fork();
         pid_t wpid;
@@ -118,7 +144,7 @@ int main() {
             }
             
             if (execvp(tokens[0], tokens) == -1) {
-                perror("Errors"); 
+                perror("Error"); 
             } 
         } 
         else if(pid > 0) {
@@ -131,5 +157,6 @@ int main() {
             perror("Failed creating child process");
         } 
 }
+    
 }
 
