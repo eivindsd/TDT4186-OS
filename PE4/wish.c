@@ -19,19 +19,21 @@ int main(int argc, char **argv) {
             f = fopen(argv[1], "r"); 
             int i = 0;
             while(fgets(terminal_line, sizeof(terminal_line), f)){
-                if((i == 0) && (terminal_line[strlen(terminal_line)-1] == '\n')) {
-                    terminal_line[strlen(terminal_line)-1] = '\0';
+                if ((i == 0) && (terminal_line[strlen(terminal_line)-1] == '\n')) {
+                terminal_line[strlen(terminal_line)-1] = '\0';
                 }
                 char* line = strdup(terminal_line);
                 filelines[i] = line;
                 i++;
-            }
+                }
+            
         }
     while(69){
         char* input;
         char* output;
         int crocodile = 1;
         int m = 0;
+        
         
        if (argc == 1) {
             printf("wish£ ");
@@ -112,23 +114,25 @@ int main(int argc, char **argv) {
             }
             
             if (execvp(tokens[0], tokens) == -1) {
-                perror("execvp");
+                perror("Error"); 
             } 
         } 
         else if(pid > 0) {
             do {
-                printf("In parent process\n");
+                printf("Parent process\n");
             }
             while (wpid == wait(&status) > 0);
         }
         else {
-            perror("fork");
+            perror("Failed creating child process");
         } 
 
         if (filelines[0] != NULL && filelines[n+1] == NULL) {
              exit(0);
         }
+    
         n++;
 
-    }
+}
+    
 }
