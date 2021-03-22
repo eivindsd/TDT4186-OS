@@ -1,3 +1,4 @@
 ls
-echo Hello World
+echo hello studass
+echo > hello
 ls -l
