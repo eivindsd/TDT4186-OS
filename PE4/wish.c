@@ -164,6 +164,10 @@ int main(int argc, char **argv) {
         if (filelines[0] != NULL && filelines[n+1] == NULL) {
              exit(0);
         }
+        //Increases the count for iterating through lines in shellscript
+        //Sets input and output back to NULL
         n++;
+        output = NULL;
+        input = NULL;
     } 
 }
