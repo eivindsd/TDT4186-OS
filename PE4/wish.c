@@ -8,85 +8,62 @@
 #include <fcntl.h>
 
 
-// char** tokenize() {
-//     char terminal_line[30];
-//     static char * tokens[20];
-//     int m = 0;
-//     printf("wish£ ");
-//     fgets(terminal_line, sizeof(terminal_line), stdin);
-//     terminal_line[strlen(terminal_line)-1] = '\0';
-//     char* token = strtok(terminal_line, " ");
-//     while(token != NULL){
-//         tokens[m] = token;
-//         token = strtok(NULL, " ");
-//         m++;
-//     }
-//     printf("Command name: %s\n", tokens[0]);
-//     if (m > 1) {
-//         printf("Command parameters: ");
-//         int n = 1;
-//         int i = 1;
-//         while ((strcmp(tokens[n], "<")!=0) && (strcmp(tokens[n], ">")!=0)) {
-//             printf(" %s", tokens[n]);
-//             n++;
-//             i = n;
-//             if (n >= m) {
-//                 break;
-//             }
-//         }
-//     printf("\n");
-//     printf("Redirections: ");
-//     for (int c = i; c<m; c++) {
-//         printf(" %s", tokens[c]);
-//     }
-//      printf("\n");
-//     }
-//     tokens[m] = NULL;
-//     return tokens;
-// }
-
-
 int main(int argc, char **argv) {
     FILE* f;
+    int n = 0;
+    char terminal_line[100];
+    static char * tokens[100];
+    static char * filelines[300];
+
     if(argc > 1) {
-            f = fopen(argv[1], "r");
+            f = fopen(argv[1], "r"); 
+            int i = 0;
+            while(fgets(terminal_line, sizeof(terminal_line), f)){
+                if((i == 0) && (terminal_line[strlen(terminal_line)-1] == '\n')) {
+                    terminal_line[strlen(terminal_line)-1] = '\0';
+                }
+                char* line = strdup(terminal_line);
+                filelines[i] = line;
+                i++;
+            }
         }
     while(69){
-        //char** tokens = tokenize();
-        char terminal_line[100];
-        static char * tokens[100];
         char* input;
         char* output;
-        int crocodile=1;
+        int crocodile = 1;
         int m = 0;
         
-        if(argc > 1) {
-            fgets(terminal_line, sizeof(terminal_line), f);
-            printf("%s\n", terminal_line);
-        }
-        else {
+       if (argc == 1) {
             printf("wish£ ");
             fgets(terminal_line, sizeof(terminal_line), stdin);
             printf("%s\n", terminal_line);
             terminal_line[strlen(terminal_line)-1] = '\0';
         }
-        char* token = strtok(terminal_line, " ");
-        while(token != NULL){
+        if (argc > 1) {
+            char* token = strtok(filelines[n], " ");
+            while(token != NULL){
+                tokens[m] = token;
+                token = strtok(NULL, " ");
+                m++;
+            }
+            
+        }
+        else {
+            char* token = strtok(terminal_line, " ");
+            while(token != NULL){
             tokens[m] = token;
             token = strtok(NULL, " ");
             m++;
+        } 
         }
-        printf("%s ", tokens[0]);
-        printf("%s ", tokens[1]);
-        printf("%s", tokens[2]);
-        printf("%s", tokens[3]);
+        
         printf("Command name: %s\n", tokens[0]);
         if (m > 1) {
             printf("Command parameters: ");
             int n = 1;
             int i = 1;
             while ((strcmp(tokens[n], "<")!=0) && (strcmp(tokens[n], ">")!=0)) {
-                printf("%s", tokens[n]);
+                printf("%s ", tokens[n]);
                 n++;
                 i = n;
                 crocodile = n;
@@ -118,15 +95,6 @@ int main(int argc, char **argv) {
         else if(strcmp(tokens[0], "exit")==0) {
             exit(0);
         }
-        // else if(strcmp(tokens[0], "./shellscript.sh")==0) {
-        //     //making the textfile executable 
-        //     chmod(tokens[0], 0755);
-        //     //execute the sh-file
-        //     if (execvp(tokens[0], tokens) == -1) {
-        //         perror("Error"); 
-        //     } 
-        // }
-
         int pid = fork();
         pid_t wpid;
         int status;
@@ -144,19 +112,23 @@ int main(int argc, char **argv) {
             }
             
             if (execvp(tokens[0], tokens) == -1) {
-                perror("Error"); 
+                perror("execvp");
             } 
         } 
         else if(pid > 0) {
             do {
-                printf("Parent process\n");
+                printf("In parent process\n");
             }
             while (wpid == wait(&status) > 0);
         }
         else {
-            perror("Failed creating child process");
+            perror("fork");
         } 
-}
-    
-}
 
+        if (filelines[0] != NULL && filelines[n+1] == NULL) {
+             exit(0);
+        }
+        n++;
+
+    }
+}
