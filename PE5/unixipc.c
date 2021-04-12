@@ -12,9 +12,8 @@ int main(int argc, char **argv) {
     //pipefd[1] refers to the write end of the pipe.
     int pipefd[2];
     pid_t pid;
-    char buf;
-    
-
+    char buf[atoi(argv[1])];
+    int received = 0;
     if(argc != 2) {
         fprintf(stderr, "Usage: %s <block size>\n", argv[0]);
         exit(EXIT_FAILURE);
@@ -34,31 +33,33 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    //while(1) {
+    while(1) {
         //in child process
         if(pid == 0) {
             int size = sizeof(argv[1]);
             char a[size];
+            printf("Write %s\n", argv[1]);
             close(pipefd[0]);   /* Close unused read end */
             //errorcheck handling on write, and write argv[1] to pipe
-            if(write(pipefd[1], argv[1], atoi(argv[1])) == -1) {
+            if(write(pipefd[1], argv[1], size) == -1) {
                 perror("write");
                 exit(EXIT_FAILURE);
             }    
         }
         //in the parent process
         else {
-            //cumulative number of received bytes
-            printf("%s", &buf);
-            int received = 0;
             close(pipefd[1]);  /* Close unused write end */
-            if(read(pipefd[0], &buf, sizeof(&buf)) == -1) {
+            int returned;
+            returned = read(pipefd[0], buf, sizeof(buf));
+            printf("Returned %d\n", returned);
+            if(read(pipefd[0], buf, sizeof(buf)) == -1) {
                 perror("read");
                 exit(EXIT_FAILURE);
             }
-            received += read(pipefd[0], &buf, sizeof(&buf));
-            //printf("%d", &buf);
-            //printf("%d", received);
+            //cumulative number of received bytes
+            received += returned;
+            printf("Buffer %s\n", buf);
+            printf("Recieved %d\n", received);
         }
-    //}
+    }
 }
