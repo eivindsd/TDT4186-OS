@@ -36,7 +36,6 @@ int main(int argc, char **argv) {
     while(1) { 
         //in child process
         if(pid == 0) {
-            close(pipefd[0]);   /* Close unused read end */
             //errorcheck handling on write, and write argv[1] to pipe
             if(write(pipefd[1], buf, size) == -1) {
                 perror("write");
@@ -45,7 +44,6 @@ int main(int argc, char **argv) {
         }
         //in the parent process
         else {
-            close(pipefd[1]);  /* Close unused write end */
             int returned;
             returned = read(pipefd[0], buf, size);
             if(returned == -1) {
