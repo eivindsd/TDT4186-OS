@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <signal.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 int bytes_recieved = 0;
 
@@ -21,6 +23,9 @@ int main(int argc, char **argv) {
     int pipefd[2];
     pid_t pid;
     int received = 0;
+    char *myfifo = "/tmp/myfifo";
+    int fd_write = -1;
+    int fd_read = -1;
     signal(SIGALRM, signal_handler);
 
     if(argc != 2) {
@@ -34,6 +39,11 @@ int main(int argc, char **argv) {
         perror("pipe");
         exit(EXIT_FAILURE);
     }
+    unlink(myfifo);
+    if ((mkfifo(myfifo, 0666)) == -1) {
+        perror("mkfifo");
+        exit(EXIT_FAILURE);
+    }
     alarm(1);
     pid = fork();
 
@@ -45,26 +55,28 @@ int main(int argc, char **argv) {
     int size = atoi(argv[1]);
     while(1) { 
         //in child process
-        if(pid == 0) {
-            
-            close(pipefd[0]);   /* Close unused read end */
+        if(pid == 0) {  
             //errorcheck handling on write, and write argv[1] to pipe
-            if(write(pipefd[1], buf, size) == -1) {
+            if (fd_write == -1) {
+                fd_write = open(myfifo, O_WRONLY);
+                }
+            if(write(fd_write, buf, size) == -1) {
                 perror("write");
                 exit(EXIT_FAILURE);
             }    
         }
         //in the parent process
         else {
-            close(pipefd[1]);  /* Close unused write end */
+            if (fd_read == -1) {
+                fd_read = open(myfifo, O_RDONLY);
+                }
             int returned;
-            returned = read(pipefd[0], buf, size);
+            returned = read(fd_read, buf, size);
             if(returned == -1) {
                 perror("read");
                 exit(EXIT_FAILURE);
             }
             //cumulative number of received bytes
-           
             received += returned;
             bytes_recieved += returned;
         } 
