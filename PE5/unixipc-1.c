@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
             //task a - output the cumulative number of received bytes after each 
             //read call of the parent process
             //this is commented out below
-            printf("Bytes recieved %lu\n", received);
+            //printf("Bytes recieved %lu\n", received);
         }
     }
 }
